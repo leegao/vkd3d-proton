@@ -1,4 +1,4 @@
-name: Test Builds on Windows
+name: Build on Windows
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -22,7 +22,7 @@ jobs:
 
     - name: Setup Meson
       shell: pwsh
-      run: pip install meson
+      run: pip install meson ninja
 
     - name: Find Visual Studio
       shell: pwsh
@@ -50,3 +50,90 @@ jobs:
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
         meson setup -Denable_tests=True -Denable_extras=True --buildtype release --backend vs2022 build-msvc-x64
         msbuild -m build-msvc-x64/vkd3d-proton.sln
+
+    - name: Build MSVC ARM64EC
+      shell: pwsh
+      run: |
+        & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=arm64 -host_arch=x64 -no_logo && set" `
+            | % {
+                $parts = $_ -Split '=', 2
+                if ($parts[0]) {
+                    [System.Environment]::SetEnvironmentVariable($parts[0], $parts[1])
+                }
+            }
+
+        $wrapperPath = "$pwd\lib_wrapper.ps1"
+        $wrapperContent = @'
+        $inputs = @()
+        $outFile = $null
+
+        foreach ($arg in $args) {
+            if ($arg -eq "csr" -or $arg -eq "-csr") { continue }
+
+            if ($arg -eq "/MACHINE:ARM64" -or $arg -eq "-MACHINE:ARM64") { continue }
+
+            if ($arg.EndsWith(".a") -and -not $outFile) {
+                $outFile = $arg
+            } else {
+                $inputs += $arg
+            }
+        }
+
+        $finalArgs = @("/NOLOGO", "/MACHINE:ARM64EC")
+        if ($outFile) { $finalArgs += "/OUT:$outFile" }
+        $finalArgs += $inputs
+
+        & lib.exe $finalArgs
+        exit $LASTEXITCODE
+        '@
+        Set-Content -Path $wrapperPath -Value $wrapperContent -Encoding utf8
+
+        $escapedWrapperPath = $wrapperPath.Replace('\', '\\')
+
+        $crossFile = @"
+        [binaries]
+        c = 'cl'
+        cpp = 'cl'
+        ar = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', '$escapedWrapperPath']
+
+        [built-in options]
+        c_args = ['/arm64EC']
+        cpp_args = ['/arm64EC']
+        c_link_args = ['/MACHINE:ARM64EC']
+        cpp_link_args = ['/MACHINE:ARM64EC']
+
+        [properties]
+        needs_exe_wrapper = true
+
+        [host_machine]
+        system = 'windows'
+        cpu_family = 'arm64ec'
+        cpu = 'arm64ec'
+        endian = 'little'
+        "@
+        [System.IO.File]::WriteAllText("build-arm64ec.txt", $crossFile)
+
+        if (Test-Path build-msvc-arm64ec) { Remove-Item -Recurse -Force build-msvc-arm64ec }
+        meson setup -Denable_tests=False -Denable_extras=True --buildtype release --cross-file build-arm64ec.txt build-msvc-arm64ec
+        meson compile -C build-msvc-arm64ec
+
+    - name: Upload x86 Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vkd3d-proton-x86
+        path: |
+          build-msvc-x86/**/*.dll
+
+    - name: Upload x64 Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vkd3d-proton-x64
+        path: |
+          build-msvc-x64/**/*.dll
+
+    - name: Upload ARM64EC Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vkd3d-proton-arm64ec
+        path: |
+          build-msvc-arm64ec/**/*.dll
