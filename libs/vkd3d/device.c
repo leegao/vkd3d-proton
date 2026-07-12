@@ -2475,7 +2475,7 @@ static HRESULT vkd3d_init_device_caps(struct d3d12_device *device,
             !physical_device_info->vertex_divisor_features.vertexAttributeInstanceRateZeroDivisor)
     {
         ERR("Lacking support for VK_EXT_vertex_attribute_divisor.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     if (!physical_device_info->xfb_properties.transformFeedbackQueries)
@@ -2616,20 +2616,20 @@ static HRESULT vkd3d_init_device_caps(struct d3d12_device *device,
     if (!physical_device_info->vulkan_1_2_features.samplerMirrorClampToEdge)
     {
         ERR("samplerMirrorClampToEdge is not supported by this implementation. This is required for correct operation.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     if (!physical_device_info->robustness2_features.robustBufferAccess2 ||
             !physical_device_info->robustness2_features.robustImageAccess2)
     {
         ERR("Robustness2 features not supported. This is required.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     if (!physical_device_info->robustness2_features.nullDescriptor)
     {
         ERR("Null descriptor in VK_EXT_robustness2 is not supported by this implementation. This is required for correct operation.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     if (vulkan_info->KHR_fragment_shading_rate)
@@ -2638,13 +2638,13 @@ static HRESULT vkd3d_init_device_caps(struct d3d12_device *device,
     if (!physical_device_info->vulkan_1_1_features.shaderDrawParameters)
     {
         ERR("shaderDrawParameters is not supported by this implementation. This is required for correct operation.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     if (!vulkan_info->KHR_push_descriptor)
     {
         ERR("Push descriptors are not supported by this implementation. This is required for correct operation.\n");
-        return E_INVALIDARG;
+        // return E_INVALIDARG;
     }
 
     return S_OK;
@@ -3104,6 +3104,7 @@ static HRESULT vkd3d_create_vk_device(struct d3d12_device *device,
 
     if (FAILED(hr = vkd3d_init_device_caps(device, create_info, &device->device_info)))
     {
+        TRACE("Failing...\n");
         vkd3d_free(user_extension_supported);
         return hr;
     }
@@ -5136,13 +5137,13 @@ static void STDMETHODCALLTYPE d3d12_device_CreateUnorderedAccessView_default(d3d
 
         vk_procs = &device->vk_procs;
         d3d12_uav_info->surfaceHandle = VK_CALL(vkGetImageViewHandleNVX(device->vk_device, &imageViewHandleInfo));
-    
+
         if ((vr = VK_CALL(vkGetImageViewAddressNVX(device->vk_device, imageViewHandleInfo.imageView, &out_info))) < 0)
         {
             ERR("Failed to get imageview address, vr %d.\n", vr);
             return;
         }
-        
+
         d3d12_uav_info->gpuVAStart = out_info.deviceAddress;
         d3d12_uav_info->gpuVASize = out_info.size;
         /* Set this to null so that subsequent calls to this API wont update the previous pointer. */
@@ -7497,7 +7498,7 @@ static D3D12_RESOURCE_STATES vkd3d_barrier_layout_to_resource_state(D3D12_BARRIE
 }
 
 static HRESULT STDMETHODCALLTYPE d3d12_device_CreateCommittedResource3(d3d12_device_iface *iface,
-    const D3D12_HEAP_PROPERTIES *heap_properties, D3D12_HEAP_FLAGS heap_flags, 
+    const D3D12_HEAP_PROPERTIES *heap_properties, D3D12_HEAP_FLAGS heap_flags,
     const D3D12_RESOURCE_DESC1 *desc, D3D12_BARRIER_LAYOUT initial_layout,
     const D3D12_CLEAR_VALUE *optimized_clear_value, ID3D12ProtectedResourceSession *protected_session,
     UINT32 num_castable_formats, const DXGI_FORMAT *castable_formats, REFIID iid, void **resource)
@@ -7509,7 +7510,7 @@ static HRESULT STDMETHODCALLTYPE d3d12_device_CreateCommittedResource3(d3d12_dev
     TRACE("iface %p, heap_properties %p, heap_flags %u, desc %p, initial_layout %u, "
             "optimized_clear_value %p, protected_session %p, num_castable_formats %u, "
             "castable_formats %p, iid %s, resource %p stub!\n", iface,
-            heap_properties, heap_flags, desc, initial_layout, optimized_clear_value, 
+            heap_properties, heap_flags, desc, initial_layout, optimized_clear_value,
             protected_session, num_castable_formats, castable_formats, debugstr_guid(iid), resource);
 
     if (protected_session)
@@ -7538,7 +7539,7 @@ static HRESULT STDMETHODCALLTYPE d3d12_device_CreateCommittedResource3(d3d12_dev
 
 static HRESULT STDMETHODCALLTYPE d3d12_device_CreatePlacedResource2(d3d12_device_iface *iface,
     ID3D12Heap *heap, UINT64 heap_offset, const D3D12_RESOURCE_DESC1 *desc, D3D12_BARRIER_LAYOUT initial_layout,
-    const D3D12_CLEAR_VALUE *optimized_clear_value, UINT32 num_castable_formats, 
+    const D3D12_CLEAR_VALUE *optimized_clear_value, UINT32 num_castable_formats,
     const DXGI_FORMAT *castable_formats, REFIID iid, void **resource)
 {
     struct d3d12_heap *heap_object = impl_from_ID3D12Heap(heap);

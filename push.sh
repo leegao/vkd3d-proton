@@ -15,8 +15,8 @@ push() {
 }
 
 push profile.json files/contents/VKD3D/2.14-1/profile.json
-push vkd3d-proton-build/x64/d3d12.dll files/contents/VKD3D/2.14-1/system32/d3d12.dll
-push vkd3d-proton-build/x64/d3d12core.dll files/contents/VKD3D/2.14-1/system32/d3d12core.dll
+# push vkd3d-proton-build/x64/d3d12.dll files/contents/VKD3D/2.14-1/system32/d3d12.dll
+# push vkd3d-proton-build/x64/d3d12core.dll files/contents/VKD3D/2.14-1/system32/d3d12core.dll
 # push vkd3d-proton-build/x86/d3d12.dll files/contents/VKD3D/2.14-1/syswow64/d3d12.dll
 # push vkd3d-proton-build/x86/d3d12core.dll files/contents/VKD3D/2.14-1/syswow64/d3d12core.dll
 # files/imagefs/home/xuser/.wine/drive_c/windows/system32/

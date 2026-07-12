@@ -6886,8 +6886,8 @@ HRESULT vkd3d_bindless_state_init(struct vkd3d_bindless_state *bindless_state,
                 device_info->vulkan_1_2_properties.maxPerStageDescriptorUpdateAfterBindStorageImages < VKD3D_MIN_VIEW_DESCRIPTOR_COUNT ||
                 device_info->vulkan_1_2_properties.maxPerStageDescriptorUpdateAfterBindStorageBuffers < VKD3D_MIN_VIEW_DESCRIPTOR_COUNT)
         {
-            ERR("Insufficient descriptor indexing support.\n");
-            goto fail;
+            ERR("Insufficient descriptor indexing support (VKD3D_MIN_VIEW_DESCRIPTOR_COUNT).\n");
+            // goto fail;
         }
     }
 
