@@ -5,3 +5,5 @@ vkd3d-proton-*/
 /profiles/vulkan
 /profiles/profile-test
 wine.sh
+winlator_*.txt
+.wraplock

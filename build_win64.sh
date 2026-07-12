@@ -1,6 +1,6 @@
-# bash package-release.sh build . --dev-build
+# bash package-release.sh build . --dev-build --debug
 
-ninja -C vkd3d-proton-build/build.64
+ninja -C vkd3d-proton-build/build.64 install
 
 # ls vkd3d-proton-build/x86
 # d3d12.dll  d3d12.dll.a  d3d12core.dll  d3d12core.dll.a
