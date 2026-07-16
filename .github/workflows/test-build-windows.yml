@@ -39,7 +39,7 @@ jobs:
         & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x86 -host_arch=x64 -no_logo && set" `
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
-        meson setup -Denable_tests=True -Denable_extras=True --buildtype release --backend vs2022 build-msvc-x86
+        meson setup -Denable_tests=True -Denable_extras=True --buildtype debugoptimized --backend vs2022 build-msvc-x86
         msbuild -m build-msvc-x86/vkd3d-proton.sln
 
     - name: Build MSVC x64
@@ -48,7 +48,7 @@ jobs:
         & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x64 -host_arch=x64 -no_logo && set" `
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
-        meson setup -Denable_tests=True -Denable_extras=True --buildtype release --backend vs2022 build-msvc-x64
+        meson setup -Denable_tests=True -Denable_extras=True --buildtype debugoptimized --backend vs2022 build-msvc-x64
         msbuild -m build-msvc-x64/vkd3d-proton.sln
 
     - name: Build MSVC ARM64EC
@@ -114,7 +114,7 @@ jobs:
         [System.IO.File]::WriteAllText("build-arm64ec.txt", $crossFile)
 
         if (Test-Path build-msvc-arm64ec) { Remove-Item -Recurse -Force build-msvc-arm64ec }
-        meson setup -Denable_tests=False -Denable_extras=True --buildtype release --cross-file build-arm64ec.txt build-msvc-arm64ec
+        meson setup -Denable_tests=False -Denable_extras=True --buildtype debugoptimized --cross-file build-arm64ec.txt build-msvc-arm64ec
         meson compile -C build-msvc-arm64ec
 
     - name: Upload x86 Artifacts
